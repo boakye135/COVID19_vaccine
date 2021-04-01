@@ -4,22 +4,27 @@ import base64
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+import altair as alt
+import plotly.express as px
 
 
 
-countries = ['Afghanistan','Albania','Algeria','Andorra','Angola','Anguilla','Argentina','Australia','Austria','Azerbaijan',
-'Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Bermuda','Bolivia','Brazil','Bulgaria','Cambodia','Canada',
-'Chile','China','Colombia','Croatia','Cyprus','Czechia','Denmark','Dominica','Ecuador','Egypt','England','Estonia','Finland','France','Germany',
-'Ghana','Gibraltar','Greece','Greenland','Grenada','Guernsey','Guatemala','Guinea','Guyana','Honduras','Hungary','Iceland','India','Indonesia','Iran',
-'Ireland','Israel','Italy','Jamaica','Japan','Jersey','Jordan','Kazakhstan','Kenya','Kuwait','Laos','Latvia','Lebanon','Liechtenstein','Lithuania',
-'Luxembourg','Macao','Malawi','Malaysia','Maldives','Malta','Mauritius','Mexico','Moldova','Monaco','Mongolia','Montenegro','Montserrat','Morocco',
-'Mozambique','Myanmar','Nepal','Netherlands','Nigeria','Norway','Oman','Pakistan','Palau','Panama','Paraguay','Peru','Philippines','Poland',
-'Portugal','Qatar','Romania','Russia','Rwanda','Senegal','Serbia','Seychelles','Singapore','Slovakia','Slovenia','Spain','Suriname',
-'Sweden','Switzerland','Thailand','Tunisia','Turkey','Uganda','Ukraine','Uruguay','Venezuela','Vietnam','Zimbabwe']
 
-menu = ["Home","Single Extractor","Bulk Extractor","DataStorage","About"]
-choice = st.sidebar.selectbox("Menu",menu)
+countries = ['Afghanistan','Albania','Algeria','Andorra','Angola','Anguilla','Antigua and Barbuda','Argentina','Australia','Austria','Azerbaijan',
+'Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Bermuda','Bolivia','Brazil','Bulgaria','Cambodia','Canada','Cayman Islands',
+'Chile','China','Colombia','Costa Rica','Croatia','Cyprus','Czechia','Denmark','Dominica','Dominican Republic','Ecuador','Egypt','El Salvador','England',
+'Equatorial Guinea','Estonia','Faeroe Islands','Falkland Islands','Finland','France','Germany','Ghana','Gibraltar','Greece','Greenland','Grenada','Guernsey',
+'Guatemala','Guinea','Guyana','Honduras','Hong Kong','Hungary','Iceland','India','Indonesia','Iran','Ireland','Isle of Man','Israel','Italy','Jamaica','Japan',
+'Jersey','Jordan','Kazakhstan','Kenya','Kuwait','Laos','Latvia','Lebanon','Liechtenstein','Lithuania','Luxembourg','Macao','Malawi','Malaysia','Maldives',
+'Malta','Mauritius','Mexico','Moldova','Monaco','Mongolia','Montenegro','Montserrat','Morocco','Mozambique','Myanmar','Namibia','Nepal','Netherlands','New Zealand',
+'Nigeria','North Macedonia','Northern Cyprus','Northern Ireland','Norway','Oman','Pakistan','Palau','Panama','Paraguay','Peru','Philippines','Poland',
+'Portugal','Qatar','Romania','Russia','Rwanda','Saint Helena','Saint Kitts and Nevis','Saint Lucia','Saint Vincent and the Grenadines','San Marino',
+'Saudi Arabia','Senegal','Serbia','Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia','South Africa','South Korea','Spain','Suriname',
+'Sweden','Switzerland','Thailand','Togo','Trinidad and Tobago','Turks and Caicos Islands','Tunisia','Turkey','Uganda','Ukraine','United Arab Emirates',
+'United Kingdom','United States','Uruguay','Venezuela','Vietnam','Wales','Zimbabwe']
 
+menu = ["Home","DataFrame Analysis","Data Visualization","DataStorage","About"]
+choice = st.sidebar.selectbox("MENU",menu)
 
 if choice == "Home":
 	st.title('COVID-19 daily vaccination records')
@@ -29,7 +34,10 @@ if choice == "Home":
 	""")
 	st.sidebar.subheader("Select Input Features")
 	selected_country = st.sidebar.selectbox('Country',countries)
-	@st.cache
+
+
+	#for country in selected_country:
+	#	country = '%20'.join(country.split())
 	def load_data(Country):
 		url = "https://github.com/owid/covid-19-data/blob/master/public/data/vaccinations/country_data/" + Country + '.csv'
 		html = pd.read_html(url, header = 0)
@@ -64,21 +72,76 @@ if choice == "Home":
 	st.markdown(filedownload(covid_free), unsafe_allow_html=True)
 
 
-elif choice == "Single Extractor":
-	list_of_df = []
-	full_table = pd.DataFrame()
-	for country in countries:
-		url_2 = "https://github.com/owid/covid-19-data/blob/master/public/data/vaccinations/country_data/" +country + '.csv'
-		html_2 = pd.read_html(url_2, header = 0)
-		df_2 = html_2[0]
-		raw_2 = df_2.drop(df_2[df_2.vaccine == 'vaccine'].index) # Deletes repeating headers in content
-		raw_2 = raw_2.drop(['Unnamed: 0'],axis = 1)
-		vaccine_data = raw_2.fillna(0)
-		list_of_df.append(vaccine_data)
-	full_df = pd.concat(list_of_df,ignore_index=True)
-	globally =  st.sidebar.checkbox('Total people vaccinated globally')
-	if globally:
-		st.write(full_df)
+
+elif choice == 'DataFrame Analysis':
+	url = 'https://covid.ourworldindata.org/data/owid-covid-data.csv'
+	big_data = pd.read_csv(url,header = 0)
+	raw = big_data.drop(big_data[big_data.location == 'Asia'].index)
+	raw = raw.drop(raw[raw.location == 'International'].index)
+	raw = raw.drop(raw[raw.location == 'Africa'].index)
+	raw = raw.drop(raw[raw.location == 'South America'].index)
+	raw = raw.drop(raw[raw.location == 'North America'].index)
+	raw = raw.drop(raw[raw.location == 'European Union'].index)
+	raw = raw.drop(raw[raw.location == 'Europe'].index)
+	raw = raw.drop(raw[raw.location == 'World'].index)
+	big_df = raw.fillna(0)
+	sample_df = big_df[['iso_code','location','continent','date','total_cases','new_cases','total_deaths',
+	                    'people_vaccinated', 'people_fully_vaccinated', 'new_vaccinations','population','total_vaccinations',
+			            'people_vaccinated_per_hundred','people_fully_vaccinated_per_hundred','total_vaccinations_per_hundred']]
+
+   #Options menu for the Dataframe Analysis choice
+	options =['DataFrame','Piechart','Combine']
+	globally =  st.sidebar.selectbox('Total people vaccinated globally',options)
+	if globally == 'DataFrame':
+		st.write(sample_df)
+	elif globally == 'Combine':
+		c1,c2 = st.beta_columns(2)
+		cols = ['location', 'total_vaccinations', 'iso_code', 'total_vaccinations_per_hundred']
+		with c1:
+			sns.set_style('darkgrid')
+			vacc_amount = sample_df[cols].groupby('location').max().sort_values('total_vaccinations', ascending=False).dropna(subset=['total_vaccinations'])
+			vacc_amount = vacc_amount.iloc[:10]
+			vacc_amount = vacc_amount.sort_values('total_vaccinations_per_hundred', ascending=False)
+			plt.figure(figsize=(12, 12))
+			sns.barplot(y = vacc_amount.index, x = vacc_amount.total_vaccinations_per_hundred,  palette = 'GnBu_d')
+			plt.ylabel('Countries')
+			plt.xlabel('Number of vaccinated people per hundred')
+		    #plt.xticks(rotation = 45)
+			st.set_option('deprecation.showPyplotGlobalUse', False)
+			st.subheader('DataFrame')
+			st.pyplot()
+
+		#chart 2
+		with c2:
+			vacc_amount = sample_df[cols].groupby('location').max().sort_values('total_vaccinations', ascending=False).dropna(subset=['total_vaccinations'])
+			vacc_amount = vacc_amount.iloc[:10]
+			plt.figure(figsize=(12, 12))
+			sns.barplot(y = vacc_amount.index, x =vacc_amount.total_vaccinations, color = 'r')
+			plt.title('Total people vaccinated per country')
+			plt.yticks(rotation = 60)
+			plt.ylabel('Countries')
+			plt.xlabel('Number of vaccinated citizens (per 10 Million)')
+			st.set_option('deprecation.showPyplotGlobalUse', False)
+			st.subheader('Visualization')
+			st.pyplot()
+	else:
+		st.header('Piechart')
+
+
+
+
+elif choice == "Data Visualization":
+	st.header('Data Visualization')
 
 else:
-	st.subheader("About")
+	st.title("About")
+	first,last = st.beta_columns(2)
+	first.subheader('COVID-19: What to do if..')
+	first.graphviz_chart("""
+	digraph{
+	come into contact>>like
+	like->share
+	}
+	""")
+	last.write('I selectbox')
+	last.image('C:\\Users\\Samuel\\Desktop\\vid.jpg',caption = 'getting the vaccine',use_column_width = True)
