@@ -7,6 +7,7 @@ import numpy as np
 import altair as alt
 import plotly.express as px
 from PIL import Image
+from lxml import etree
 
 
 countries = ['Afghanistan','Albania','Algeria','Andorra','Angola','Anguilla','Antigua and Barbuda','Argentina','Australia','Austria','Azerbaijan',
