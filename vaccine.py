@@ -25,6 +25,7 @@ countries = ['Afghanistan','Albania','Algeria','Andorra','Angola','Anguilla','An
 #Covid vaccination data by country DataFrame
 @st.cache
 def load_data(Country):
+	Country = '%20'.join(Country.split())
 	url = "https://github.com/owid/covid-19-data/blob/master/public/data/vaccinations/country_data/" + Country + '.csv'
 	html = pd.read_html(url, header = 0)
 	df = html[0]
@@ -32,6 +33,7 @@ def load_data(Country):
 	raw = raw.drop(['Unnamed: 0'],axis = 1)
 	vaccine_data = raw.fillna(0)
 	return vaccine_data
+
 
 #Global Covid dataframe generation
 @st.cache
@@ -77,6 +79,7 @@ elif choice == 'Vaccination':
 		st.sidebar.subheader("Select Input Features")
 		selected_country = st.sidebar.selectbox('Country',countries)
 
+
 		vaccine_data = load_data(selected_country)
 
 		# Sidebar - Vaccine type
@@ -90,6 +93,7 @@ elif choice == 'Vaccination':
 		covid_free = vaccine_data[(vaccine_data.vaccine.isin(selected_vaccine)) & (vaccine_data.date.isin(selected_date))]
 		st.header('Display Daily Vaccinations by Country.')
 		st.write('Data Dimension: ' + str(covid_free.shape[0]) + ' rows and ' + str(covid_free.shape[1]) + ' columns.')
+		st.markdown("**NOTE**: You can't unselect the last **date** and **vaccine type.**")
 		st.dataframe(covid_free)
 
 		# Download data of vaccinated people
