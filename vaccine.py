@@ -64,7 +64,7 @@ if choice == "Home":
 	This app performs simple webscraping of Daily COVID-19 vaccinations!
 	* **App by:** Nana Kwame Boakye
 	""")
-	image = Image.open('coro.jpeg')
+	image = Image.open('data\\coro.jpeg')
 	st.image(image,use_column_width = True)
 	st.markdown('<style>body{background-color: lightblue;}</style>',unsafe_allow_html = True)
 
