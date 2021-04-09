@@ -80,22 +80,12 @@ elif choice == 'Vaccination':
 		st.sidebar.subheader("Select Input Features")
 		selected_country = st.sidebar.selectbox('Country',countries)
 
-
 		vaccine_data = load_data(selected_country)
 
-		# Sidebar - Vaccine type
-		sorted_unique_vaccine = sorted(vaccine_data.vaccine.unique())
-		selected_vaccine = st.sidebar.multiselect('Vaccine Type', sorted_unique_vaccine, sorted_unique_vaccine)
-
-		sorted_unique_date = sorted(vaccine_data.date.unique())
-		selected_date = st.sidebar.multiselect('Vaccination Date',sorted_unique_date,sorted_unique_date)
-
-		# Filtering data
-		covid_free = vaccine_data[(vaccine_data.vaccine.isin(selected_vaccine)) & (vaccine_data.date.isin(selected_date))]
 		st.header('Display Daily Vaccinations by Country.')
-		st.write('Data Dimension: ' + str(covid_free.shape[0]) + ' rows and ' + str(covid_free.shape[1]) + ' columns.')
+		#st.write('Data Dimension: ' + str(covid_free.shape[0]) + ' rows and ' + str(covid_free.shape[1]) + ' columns.')
 		st.markdown("**NOTE**: You can't unselect the last **date** and **vaccine type.**")
-		st.dataframe(covid_free)
+		st.dataframe(vaccine_data)
 
 		# Download data of vaccinated people
 		# https://discuss.streamlit.io/t/how-to-download-file-in-streamlit/1806
@@ -104,12 +94,11 @@ elif choice == 'Vaccination':
 			b64 = base64.b64encode(csv.encode()).decode()  # strings <-> bytes conversions
 			href = f'<a href="data:file/csv;base64,{b64}" download="vaccinations.csv">Download CSV File</a>'
 			return href
-
-		st.markdown(filedownload(covid_free), unsafe_allow_html=True)
+		st.markdown(filedownload(vaccine_data), unsafe_allow_html=True)
 
 		  #brief article on covid vaccinations
-		st.write(str(covid_free.loc[0]['location']) + ' started its COVID-19 vaccination on ' + str(covid_free.iloc[-1]['date']) +
-		' and a total number of ' + str(covid_free['people_vaccinated'].sum()) + ' people have being vaccinated using ' + str(covid_free['vaccine'].unique()))
+		st.write(str(vaccine_data.loc[0]['location']) + ' started its COVID-19 vaccination on ' + str( vaccine_data.iloc[-1]['date']) +
+		' and a total number of ' + str(vaccine_data['people_vaccinated'].sum()) + ' people have being vaccinated using ' + str(vaccine_data['vaccine'].unique()))
 
 	elif globally == 'Global Vaccination':
 		st.header('Display Global Covid-19 Data.')
