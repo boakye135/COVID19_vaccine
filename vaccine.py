@@ -181,7 +181,7 @@ elif choice == "Data Visualization":
 			status_select = st.sidebar.radio('Status',('total_cases','total_deaths','people_vaccinated', 'people_fully_vaccinated',))
 			st.markdown("Please **NOTE** the **0** represents continents that were not defined but valuable in our analysis.")
 			if status_select == 'total_cases':
-				st.header('Total Comfrimed cases')
+				st.header('Total Comfirmed cases')
 				fig = px.pie(sample_df, values = sample_df['total_cases'],names = sample_df['continent'])
 				st.plotly_chart(fig)
 			elif status_select == 'people_vaccinated':
