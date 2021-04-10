@@ -65,7 +65,7 @@ if choice == "Home":
 	This app performs simple webscraping of Daily COVID-19 vaccinations!
 	* **App by:** Nana Kwame Boakye
 	""")
-	image = Image.open('coro.jpeg')
+	image = Image.open('coro.jpg')
 	st.image(image,use_column_width = True)
 	st.markdown('<style>body{background-color: lightblue;}</style>',unsafe_allow_html = True)
 
@@ -84,7 +84,6 @@ elif choice == 'Vaccination':
 
 		st.header('Display Daily Vaccinations by Country.')
 		#st.write('Data Dimension: ' + str(covid_free.shape[0]) + ' rows and ' + str(covid_free.shape[1]) + ' columns.')
-		st.markdown("**NOTE**: You can't unselect the last **date** and **vaccine type.**")
 		st.dataframe(vaccine_data)
 
 		# Download data of vaccinated people
